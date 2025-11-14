@@ -1,222 +1,235 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Intraday Calculator — Clean UI</title>
-  <style>
-    :root{
-      --bg:#F6F8FB;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --accent:#0f62fe;
-      --accent-2:#10b981;
-      --glass: rgba(255,255,255,0.6);
-      --radius:12px;
-      --shadow: 0 6px 18px rgba(16,24,40,0.06);
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", monospace;
-    }
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Trading Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f8fb;
+    --card:#ffffff;
+    --muted:#6b7280;
+    --accent:#2f80ed;     /* bright blue for buttons & links */
+    --danger:#ef4444;     /* red for stop-loss */
+    --success:#10b981;    /* green for target */
+    --shadow: 0 8px 24px rgba(12,42,80,0.06);
+    --radius:12px;
+  }
+  * { box-sizing: border-box; }
+  body{
+    margin:0; font-family: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    background: linear-gradient(180deg,#f8fafc 0%, var(--bg) 100%);
+    color:#0b1220; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale;
+    padding:28px;
+  }
 
-    html,body{height:100%}
-    body{
-      margin:0; font-family:Inter, system-ui, -apple-system, "Helvetica Neue", Arial;
-      background: linear-gradient(180deg, #f7fafc 0%, var(--bg) 100%);
-      color:#0f172a; -webkit-font-smoothing:antialiased; padding:20px;
-      display:flex; justify-content:center;
-    }
+  .container { max-width:1100px; margin: 0 auto; }
+  header { text-align:center; margin-bottom:20px; }
+  header h1 { margin:0; font-size:28px; font-weight:800; letter-spacing:-0.4px; }
+  header p { margin:8px 0 0; color:var(--muted); font-size:14px; }
 
-    .wrap{max-width:1100px; width:100%;}
-    header{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-    .logo{
-      width:56px;height:56px;border-radius:12px;background:var(--accent);display:grid;place-items:center;color:white;font-weight:800;font-size:20px;
-      box-shadow: 0 6px 20px rgba(15,98,254,0.12);
-    }
-    h1{margin:0;font-size:20px}
-    p.lead{margin:2px 0 0; color:var(--muted); font-size:13px}
+  /* Grid layout */
+  .grid { display:grid; grid-template-columns: 1fr; gap:18px; }
+  @media(min-width:1000px){ .grid { grid-template-columns: 1fr; } }
 
-    .grid{
-      display:grid;
-      grid-template-columns: 420px 1fr;
-      gap:18px;
-      align-items:start;
-    }
-    @media (max-width:980px){
-      .grid{grid-template-columns:1fr; padding-bottom:30px}
-    }
+  /* Cards */
+  .card {
+    background:var(--card); border-radius:12px; padding:18px; box-shadow:var(--shadow);
+    border: 1px solid rgba(15,23,42,0.03);
+  }
 
-    .card{background:var(--card); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);}
-    .controls .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-    label{display:block;font-weight:600;font-size:13px;margin-bottom:6px;color:#0b1220}
-    input[type=number]{width:140px;padding:8px 10px;border-radius:10px;border:1px solid #e6eef6;background:#fbfdff;font-size:14px}
-    .radioRow{display:flex;gap:12px;align-items:center}
-    .radioRow label{font-weight:600;font-size:14px}
-    .actions{display:flex;gap:10px;align-items:center;margin-top:10px}
-    button{padding:9px 14px;border-radius:10px;border:none;cursor:pointer;font-weight:700;font-size:14px}
-    .btn-primary{background:var(--accent);color:white}
-    .btn-ghost{background:transparent;border:1px solid #e6eef6;color:var(--accent);font-weight:700}
-    .btn-success{background:var(--accent-2);color:white}
+  /* Trade Setup */
+  .trade-setup h3 { margin:0 0 6px 0; font-size:18px; }
+  .trade-setup .muted { color:var(--muted); font-size:13px; margin-bottom:12px; }
 
-    /* grouped key numbers */
-    .key-grid{display:flex;gap:12px;align-items:stretch;flex-wrap:wrap}
-    .key{
-      background:linear-gradient(180deg, rgba(255,255,255,0.9), var(--card));
-      padding:14px;border-radius:12px;flex:1;min-width:150px;border:1px solid #eef6ff;
-      display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:8px;
-    }
-    .key .label{font-size:12px;color:var(--muted);font-weight:700}
-    .key .value{font-size:20px;font-weight:800;color:#0b1220}
-    .value.small{font-size:15px;font-weight:700;color:#0b1220}
+  .form-row { display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .form-col { flex:1 1 100%; }
+  @media(min-width:900px){
+    .form-col.half { flex: 1 1 48%; }
+    .form-col.small { flex: 1 1 22%; min-width:120px; }
+  }
 
-    /* details area */
-    .info-table th{font-weight:700;text-align:left;padding:8px 6px;color:#0b1220;font-size:13px}
-    .info-table td{padding:8px 6px;color:var(--muted);font-size:13px;text-align:right}
+  label { display:block; font-weight:600; font-size:13px; margin-bottom:8px; color:#0b1220; }
+  input[type="number"], .full-input {
+    width:100%; padding:12px 14px; border-radius:8px; border:1px solid #e6eef6; background:#fbfdff;
+    font-size:15px; color:#0b1220;
+  }
+  .radio-group { display:flex; align-items:center; gap:18px; margin-bottom:8px; }
+  .radio-group input { margin-right:8px; transform:translateY(1px); }
 
-    /* profit table */
-    .profit-wrap{margin-top:14px}
-    table.profit{width:100%;border-collapse:collapse;background:transparent}
-    table.profit th, table.profit td{padding:10px 8px;border-bottom:1px solid #f1f5f9}
-    table.profit th{background:transparent;text-align:left;color:#0b1220;font-weight:700}
-    table.profit td.right{text-align:right;color:#0b1220;font-weight:700}
+  .calc-btn {
+    display:block; width:100%; background:var(--accent); color:white; border:none; border-radius:10px;
+    padding:14px; font-size:16px; font-weight:700; cursor:pointer; margin-top:12px;
+    box-shadow: 0 8px 20px rgba(47,128,237,0.14);
+  }
+  .calc-btn:hover { filter:brightness(0.98); }
 
-    .muted{color:var(--muted);font-size:13px}
-    footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center}
+  /* Results card layout */
+  .results-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:14px; align-items:stretch; }
+  @media(max-width:760px){ .results-grid { grid-template-columns:1fr; } }
 
-  </style>
+  .stat {
+    border-radius:10px; padding:14px; background:linear-gradient(180deg, #fff, #fbfdff); border:1px solid #eef6ff;
+    display:flex; flex-direction:column; gap:6px; align-items:flex-start; justify-content:center;
+  }
+  .stat .label { font-size:13px; color:var(--muted); font-weight:700; }
+  .stat .value { font-size:22px; font-weight:800; color:#08122a; }
+
+  .stat.stoploss .value { color:var(--danger); }
+  .stat.target .value { color:var(--success); font-size:20px; }
+
+  /* details table */
+  .details { margin-top:14px; border-radius:10px; overflow:hidden; border:1px solid #f1f5f9; }
+  .details table { width:100%; border-collapse:collapse; }
+  .details th, .details td { text-align:left; padding:12px 14px; font-size:14px; border-bottom:1px solid #f3f6f9; }
+  .details th { width:70%; color:var(--muted); font-weight:600; background:transparent; }
+  .details td.right { text-align:right; color:#0b1220; font-weight:600; }
+
+  /* targets table card */
+  .targets-header { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; }
+  .targets-header .muted { color:var(--muted); font-size:13px; }
+  .targets-table { margin-top:8px; border-radius:10px; overflow:auto; border:1px solid #eef2f7; max-height:520px; }
+
+  table.targets { width:100%; border-collapse:collapse; }
+  table.targets thead th { text-align:left; padding:12px 14px; background:#fbfdff; font-weight:700; color:#0b1220; border-bottom:1px solid #eef2f7; }
+  table.targets tbody td { padding:12px 14px; border-bottom:1px solid #f6f8fb; font-size:15px; color:#0b1220; vertical-align:middle; }
+  table.targets tbody td.right { text-align:right; }
+  table.targets tbody td.profitCol { text-align:left; width:55%; }
+table.targets tbody td.qtyCol { text-align:left; width:20%; }
+  .target-btn {
+    border:0; background:transparent; color:var(--accent); font-weight:700; cursor:pointer; padding:0;
+    font-size:15px;
+  }
+  .target-btn:focus { outline: none; text-decoration:underline; }
+
+  .btn-copy { margin-left:8px; padding:8px 12px; border-radius:8px; border:none; background:#111827; color:white; font-weight:700; cursor:pointer; }
+
+  footer { margin-top:14px; text-align:center; color:var(--muted); font-size:13px; }
+
+</style>
 </head>
 <body>
-  <div class="wrap">
+  <div class="container">
     <header>
-      <div class="logo">₹</div>
-      <div>
-        <h1>Intraday Calculator — Clean UI</h1>
-        <p class="lead">Pick Buy / Sell, enter entry price — quantity, stop-loss and profit targets update instantly. Prices shown with one decimal.</p>
-      </div>
+      <h1>Trading Calculator</h1>
+      <p>Calculate your position size and profit targets with precision</p>
     </header>
 
-    <div class="grid">
-      <!-- left: controls -->
-      <div class="card controls">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-          <div style="min-width:160px">
-            <label>Action</label>
-            <div class="radioRow">
-              <label><input type="radio" name="side" value="BUY" checked> Buy</label>
-              <label><input type="radio" name="side" value="SELL"> Sell</label>
-            </div>
-          </div>
+    <!-- TRADE SETUP -->
+    <section class="card trade-setup" aria-labelledby="tradeSetupHeading">
+      <h3 id="tradeSetupHeading">Trade Setup</h3>
+      <div class="muted">Configure your trade parameters</div>
 
-          <div>
-            <label>Stock Price (Entry ₹)</label>
-            <input id="entry" type="number" step="0.1" value="500.0">
-          </div>
+      <div style="margin-top:14px;">
+        <div class="radio-group" role="radiogroup" aria-label="Action">
+          <label><input type="radio" name="side" value="BUY" checked> Buy</label>
+          <label><input type="radio" name="side" value="SELL"> Sell</label>
+        </div>
 
-          <div>
+        <div style="margin-top:10px;">
+          <label>Stock Price (Entry ₹)</label>
+          <input id="entry" class="full-input" type="number" step="0.1" value="499.8">
+        </div>
+
+        <div style="margin-top:10px;" class="form-row">
+          <div class="form-col small">
             <label>Capital (₹)</label>
-            <input id="capital" type="number" step="1" value="20000">
+            <input id="capital" type="number" value="20000">
           </div>
-
-          <div>
+          <div class="form-col small">
             <label>Leverage (X)</label>
             <input id="leverage" type="number" step="0.1" value="5">
           </div>
-        </div>
-
-        <div style="margin-top:12px; display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
-          <div style="min-width:140px">
-            <label>Total Risk (₹)</label>
-            <input id="risk" type="number" step="1" value="2000">
+          <div class="form-col small">
+            <label>Loss (₹)</label>
+            <input id="risk" type="number" value="2000">
           </div>
-
-          <div style="min-width:140px">
-            <label>Default Profit (₹)</label>
-            <input id="profitDefault" type="number" step="1" value="2000">
-          </div>
-
-          <div style="flex:1"></div>
-        </div>
-
-        <div class="actions">
-          <button id="calc" class="btn-primary">Calculate</button>
-          <button id="copyCSV" class="btn-success">Copy CSV</button>
-          <div style="margin-left:auto" class="muted">Quantity = floor(usable capital / entry)</div>
-        </div>
-
-        <!-- grouped key values -->
-        <div style="margin-top:14px">
-          <div class="key-grid">
-            <div class="key" id="keyQty">
-              <div class="label">Quantity</div>
-              <div class="value" id="qtyVal">—</div>
-            </div>
-            <div class="key" id="keySL">
-              <div class="label">Stop-loss price (for total risk)</div>
-              <div class="value" id="slVal">—</div>
-            </div>
-            <div class="key" id="keyTP">
-              <div class="label">Target price (for profit)</div>
-              <div class="value" id="tpVal">—</div>
-            </div>
+          <div class="form-col small">
+            <label>Profit (₹)</label>
+            <input id="profitDefault" type="number" value="2000">
           </div>
         </div>
 
-        <!-- extra info separated -->
-        <div style="margin-top:14px;" class="card" >
-          <table style="width:100%" class="info-table">
-            <tr><th>Usable capital (₹)</th><td id="usableVal">—</td></tr>
-            <tr><th>Total Risk (₹)</th><td id="riskVal">—</td></tr>
-            <tr><th>Risk per share (₹)</th><td id="rpsVal">—</td></tr>
-            <tr><th>Profit target (₹)</th><td id="profitVal">—</td></tr>
-            <tr><th>Profit per share (₹)</th><td id="ppsVal">—</td></tr>
-          </table>
+        <button id="calc" class="calc-btn" style="margin-top:14px;">Calculate</button>
+      </div>
+    </section>
+
+    <!-- Calculation Results (give this an ID for scrolling) -->
+    <section id="resultsSection" class="card" style="margin-top:18px;">
+      <h3 style="margin:0 0 10px 0;">Calculation Results</h3>
+
+      <div class="results-grid" id="resultsGrid">
+        <div class="stat">
+          <div class="label">Quantity</div>
+          <div class="value" id="qtyVal">—</div>
+        </div>
+
+        <div class="stat stoploss">
+          <div class="label">Stop-loss Price</div>
+          <div class="value" id="slVal">—</div>
+        </div>
+
+        <div class="stat target">
+          <div class="label">Target Price (for profit)</div>
+          <div class="value" id="tpVal">—</div>
         </div>
       </div>
 
-      <!-- right: results & table -->
-      <div>
-        <div class="card">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-            <div>
-              <h3 style="margin:0 0 6px 0">Targets Table</h3>
-              <div class="muted">Profit split from ₹500 → ₹10,000 (step ₹500). Prices shown with 1 decimal.</div>
-            </div>
-            <div class="muted" style="font-size:13px">Entry: <span id="entryShow">—</span></div>
-          </div>
-
-          <div class="profit-wrap">
-            <table class="profit">
-              <thead>
-                <tr>
-                  <th>Profit Target (₹)</th>
-                  <th class="right">Target Price (₹)</th>
-                  <th class="right">Qty</th>
-                </tr>
-              </thead>
-              <tbody id="profitBody">
-                <!-- filled by JS -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <footer class="card" style="margin-top:12px;">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
-            <div class="muted">Made for quick intraday decisioning · One-decimal formatting</div>
-            <div class="muted">Buy = price ↑ • Sell = price ↓</div>
-          </div>
-        </footer>
+      <div class="details" style="margin-top:14px;">
+        <table>
+          <tbody>
+            <tr><th>Usable Capital (₹)</th><td class="right" id="usableVal">—</td></tr>
+            <tr><th>Loss (₹)</th><td class="right" id="riskVal">—</td></tr>
+            <tr><th>Loss per Share (₹)</th><td class="right" id="rpsVal">—</td></tr>
+            <tr><th>Profit (₹)</th><td class="right" id="profitVal">—</td></tr>
+            <tr><th>Profit per Share (₹)</th><td class="right" id="ppsVal">—</td></tr>
+          </tbody>
+        </table>
       </div>
-    </div>
+    </section>
+
+    <!-- Targets Table -->
+    <section class="card" style="margin-top:18px;">
+      <div class="targets-header">
+        <div>
+          <h3 style="margin:0">Targets Table</h3>
+          <div class="muted">Profit split from ₹500 → ₹10,000 (step ₹500). Prices shown with 1 decimal. &nbsp;<strong>Entry:</strong> <span id="entryShow">—</span></div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button id="copyCSV" class="btn-copy" title="Copy table CSV">Copy CSV</button>
+        </div>
+      </div>
+
+      <div class="targets-table">
+        <table class="targets" aria-describedby="targetsTableDesc">
+          <thead>
+            <tr>
+              <th>Profit Target (₹)</th>
+              <th class="right">Target Price (₹)</th>
+              <th class="right">Qty</th>
+            </tr>
+          </thead>
+          <tbody id="targetsBody">
+            <!-- rows inserted by JS -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <footer>
+      Made for quick intraday decisioning · One-decimal formatting
+    </footer>
   </div>
 
 <script>
-  // one-decimal formatter
-  function fmt1(n){
+  // Formatter with 1 decimal
+  function fmt1(n) {
     if (typeof n !== 'number' || !isFinite(n)) return '—';
     return n.toFixed(1);
   }
 
-  function calcAll(){
-    // inputs
+  function calcAll() {
     const side = document.querySelector('input[name="side"]:checked').value;
     const entry = parseFloat(document.getElementById('entry').value) || 0;
     const capital = parseFloat(document.getElementById('capital').value) || 0;
@@ -224,83 +237,102 @@
     const risk = parseFloat(document.getElementById('risk').value) || 0;
     const profitDefault = parseFloat(document.getElementById('profitDefault').value) || 0;
 
-    // derived
     const usable = capital * leverage;
     const qty = entry > 0 ? Math.floor(usable / entry) : 0;
     const riskPerShare = qty > 0 ? (risk / qty) : 0;
-
-    // SL price (direction dependent)
-    const slPrice = (qty > 0) ? (side === 'BUY' ? (entry - riskPerShare) : (entry + riskPerShare)) : NaN;
-
-    // target price for default profit
+    const slPrice = qty > 0 ? (side === 'BUY' ? (entry - riskPerShare) : (entry + riskPerShare)) : NaN;
     const profitPerShareDefault = qty > 0 ? (profitDefault / qty) : 0;
-    const targetDefault = (qty > 0) ? (side === 'BUY' ? (entry + profitPerShareDefault) : (entry - profitPerShareDefault)) : NaN;
+    const targetDefault = qty > 0 ? (side === 'BUY' ? (entry + profitPerShareDefault) : (entry - profitPerShareDefault)) : NaN;
 
-    // update grouped key values (big)
+    // update big stat cards
     document.getElementById('qtyVal').textContent = qty > 0 ? String(qty) : '—';
-    document.getElementById('slVal').textContent = qty > 0 ? fmt1(slPrice) : '—';
-    document.getElementById('tpVal').textContent = qty > 0 ? fmt1(targetDefault) : '—';
+    document.getElementById('slVal').textContent = qty > 0 ? '₹' + fmt1(slPrice) : '—';
+    document.getElementById('tpVal').textContent = qty > 0 ? '₹' + fmt1(targetDefault) : '—';
 
-    // update extras
-    document.getElementById('usableVal').textContent = fmt1(usable);
-    document.getElementById('riskVal').textContent = fmt1(risk);
-    document.getElementById('rpsVal').textContent = qty>0 ? fmt1(riskPerShare) : '—';
-    document.getElementById('profitVal').textContent = fmt1(profitDefault);
-    document.getElementById('ppsVal').textContent = qty>0 ? fmt1(profitPerShareDefault) : '—';
+    // details
+    document.getElementById('usableVal').textContent = qty>0 ? '₹' + fmt1(usable) : '—';
+    document.getElementById('riskVal').textContent = '₹' + fmt1(risk);
+    document.getElementById('rpsVal').textContent = qty>0 ? '₹' + fmt1(riskPerShare) : '—';
+    document.getElementById('profitVal').textContent = '₹' + fmt1(profitDefault);
+    document.getElementById('ppsVal').textContent = qty>0 ? '₹' + fmt1(profitPerShareDefault) : '—';
 
-    document.getElementById('entryShow').textContent = entry>0 ? fmt1(entry) : '—';
+    document.getElementById('entryShow').textContent = entry > 0 ? fmt1(entry) : '—';
 
-    // Build profit table rows (500 -> 10000)
-    const tbody = document.getElementById('profitBody');
+    // build targets table (500 -> 10000)
+    const tbody = document.getElementById('targetsBody');
     tbody.innerHTML = '';
-    for (let p = 500; p <= 10000; p += 500){
+    const rows = [];
+    for (let p = 500; p <= 10000; p += 500) {
       const pps = qty > 0 ? (p / qty) : 0;
       const target = qty > 0 ? (side === 'BUY' ? (entry + pps) : (entry - pps)) : NaN;
       const tr = document.createElement('tr');
 
       const tdProfit = document.createElement('td');
+      tdProfit.className = 'profitCol';
       tdProfit.textContent = p.toLocaleString('en-IN');
-      tr.appendChild(tdProfit);
 
       const tdTarget = document.createElement('td');
-      tdTarget.className = 'right';
-      tdTarget.textContent = qty>0 ? fmt1(target) : '—';
-      tr.appendChild(tdTarget);
+      tdTarget.className = 'targetCol';
+      // styled like link but stable alignment
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'target-btn';
+      btn.textContent = qty > 0 ? '₹' + fmt1(target) : '—';
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (qty > 0 && navigator.clipboard) {
+          navigator.clipboard.writeText(fmt1(target)).then(()=> {
+            // small feedback
+            btn.textContent = 'Copied';
+            setTimeout(()=> btn.textContent = '₹' + fmt1(target), 800);
+          });
+        }
+      });
+      tdTarget.appendChild(btn);
 
       const tdQty = document.createElement('td');
-      tdQty.className = 'right';
-      tdQty.textContent = qty>0 ? String(qty) : '—';
-      tr.appendChild(tdQty);
+      tdQty.className = 'qtyCol';
+      tdQty.textContent = qty > 0 ? String(qty) : '—';
 
+      tr.appendChild(tdProfit);
+      tr.appendChild(tdTarget);
+      tr.appendChild(tdQty);
       tbody.appendChild(tr);
+
+      rows.push([p, qty>0?fmt1(target):'', qty>0?qty:'']);
     }
 
-    // CSV for copy (Profit, TargetPrice, Qty only per request)
+    // prepare CSV for copy
     window._lastCSV = (() => {
-      const lines = [['Profit Target (₹)','Target Price (₹)','Qty']];
-      for (let p = 500; p <= 10000; p += 500){
-        const pps = qty > 0 ? (p / qty) : 0;
-        const target = qty > 0 ? (side === 'BUY' ? (entry + pps) : (entry - pps)) : '';
-        lines.push([p, qty>0?fmt1(target):'', qty>0?qty:'']);
-      }
-      return lines.map(r => r.join(',')).join('\n');
+      const header = ['Profit Target (₹)','Target Price (₹)','Qty'];
+      const lines = [header.join(',')];
+      for (const r of rows) lines.push(r.join(','));
+      return lines.join('\n');
     })();
   }
 
-  // wire up controls
-  document.getElementById('calc').addEventListener('click', calcAll);
+  // wrapper to calculate and then scroll smoothly to results
+  function calcAndScroll() {
+    calcAll();
+    const el = document.getElementById('resultsSection');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+
+  // wire buttons
+  document.getElementById('calc').addEventListener('click', calcAndScroll);
   document.getElementById('copyCSV').addEventListener('click', () => {
-    if (!window._lastCSV){ alert('Calculate first'); return; }
+    if (!window._lastCSV) { alert('Calculate first'); return; }
     navigator.clipboard.writeText(window._lastCSV).then(()=> alert('Targets copied as CSV to clipboard!'));
   });
 
-  // live updates
-  document.querySelectorAll('input[name="side"]').forEach(el => el.addEventListener('change', calcAll));
+  // live update when inputs change (no scrolling)
   ['entry','capital','leverage','risk','profitDefault'].forEach(id => document.getElementById(id).addEventListener('input', calcAll));
+  document.querySelectorAll('input[name="side"]').forEach(el => el.addEventListener('change', calcAll));
 
-  // initial
+  // initial run
   calcAll();
-
 </script>
 </body>
 </html>
