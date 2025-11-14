@@ -96,7 +96,7 @@
   table.targets tbody td { padding:12px 14px; border-bottom:1px solid #f6f8fb; font-size:15px; color:#0b1220; vertical-align:middle; }
   table.targets tbody td.right { text-align:right; }
   table.targets tbody td.profitCol { text-align:left; width:55%; }
-table.targets tbody td.qtyCol { text-align:left; width:20%; }
+  table.targets tbody td.qtyCol { text-align:left; width:20%; }
   .target-btn {
     border:0; background:transparent; color:var(--accent); font-weight:700; cursor:pointer; padding:0;
     font-size:15px;
@@ -129,29 +129,29 @@ table.targets tbody td.qtyCol { text-align:left; width:20%; }
 
         <div style="margin-top:10px;">
           <label>Stock Price (Entry ₹)</label>
-          <input id="entry" class="full-input" type="number" step="0.1" value="499.8">
+          <input id="entry" class="full-input" type="number" step="0.1" value="499.8" />
         </div>
 
         <div style="margin-top:10px;" class="form-row">
           <div class="form-col small">
             <label>Capital (₹)</label>
-            <input id="capital" type="number" value="20000">
+            <input id="capital" type="number" value="20000" />
           </div>
           <div class="form-col small">
             <label>Leverage (X)</label>
-            <input id="leverage" type="number" step="0.1" value="5">
+            <input id="leverage" type="number" step="0.1" value="5" />
           </div>
           <div class="form-col small">
             <label>Loss (₹)</label>
-            <input id="risk" type="number" value="2000">
+            <input id="risk" type="number" value="2000" />
           </div>
           <div class="form-col small">
             <label>Profit (₹)</label>
-            <input id="profitDefault" type="number" value="2000">
+            <input id="profitDefault" type="number" value="2000" />
           </div>
         </div>
 
-        <button id="calc" class="calc-btn" style="margin-top:14px;">Calculate</button>
+        <button id="calc" class="calc-btn" style="margin-top:14px;" type="button">Calculate</button>
       </div>
     </section>
 
@@ -283,8 +283,9 @@ table.targets tbody td.qtyCol { text-align:left; width:20%; }
         if (qty > 0 && navigator.clipboard) {
           navigator.clipboard.writeText(fmt1(target)).then(()=> {
             // small feedback
+            const original = '₹' + fmt1(target);
             btn.textContent = 'Copied';
-            setTimeout(()=> btn.textContent = '₹' + fmt1(target), 800);
+            setTimeout(()=> btn.textContent = original, 800);
           });
         }
       });
@@ -330,6 +331,33 @@ table.targets tbody td.qtyCol { text-align:left; width:20%; }
   // live update when inputs change (no scrolling)
   ['entry','capital','leverage','risk','profitDefault'].forEach(id => document.getElementById(id).addEventListener('input', calcAll));
   document.querySelectorAll('input[name="side"]').forEach(el => el.addEventListener('change', calcAll));
+
+  // --- New: Enter-to-calculate behavior ---
+  // When user presses Enter inside any input within .trade-setup, trigger calculate + scroll.
+  (function attachEnterKey() {
+    const setup = document.querySelector('.trade-setup');
+    if (!setup) return;
+    // Select only inputs inside trade-setup
+    const inputs = setup.querySelectorAll('input[type="number"], input[type="text"]');
+    inputs.forEach(input => {
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();            // prevent accidental form submission / unwanted behavior
+          calcAndScroll();              // run calculate + smooth scroll
+        }
+      });
+    });
+    // Also handle radio keys: when user hits Enter on radio labels, run calcAndScroll
+    const radios = setup.querySelectorAll('input[type="radio"]');
+    radios.forEach(r => r.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        // toggle radio (space normally toggles; Enter should also commit)
+        r.checked = true;
+        calcAndScroll();
+      }
+    }));
+  })();
 
   // initial run
   calcAll();
