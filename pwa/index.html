@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Intraday Trading Calculator (PWA)</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#007bff" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<style>
+:root { --accent: #007bff; --success: #28a745; }
+body { font-family: system-ui,-apple-system,Roboto,Arial; padding: 18px; max-width: 980px; margin: auto; background: #f7f8fb; color: #111; }
+header { display: flex; align-items: center; gap: 12px; }
+header h1 { font-size: 1.1rem; margin: 0; }
+.card { background: #fff; border-radius: 10px; padding: 16px; box-shadow: 0 6px 18px rgba(18,38,63,0.06); margin-top: 14px; }
+button { padding: 8px 14px; border-radius: 8px; border: none; cursor: pointer; font-weight: 700; }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-success { background: var(--success); color: #fff; }
+</style>
+</head>
+<body>
+<header>
+<h1>Intraday Trading Calculator - PWA</h1>
+</header>
+<div class="card">
+<h2>Buy/Sell Calculator</h2>
+<p>Action: <input type="radio" name="side" value="BUY" checked /> BUY <input type="radio" name="side" value="SELL" /> SELL</p>
+<p>Entry Price: <input id="entry" type="number" value="500" /></p>
+<p>Capital: <input id="capital" type="number" value="20000" /></p>
+<p>Leverage: <input id="leverage" type="number" value="5" /></p>
+<p>Risk: <input id="risk" type="number" value="2000" /></p>
+<p><button id="calc" class="btn-primary">Calculate</button></p>
+</div>
+<div id="result" class="card"></div>
+<script>
+if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+function calc() { const side = document.querySelector('input[name="side"]:checked').value; const entry = parseFloat(document.getElementById('entry').value) || 0; const capital = parseFloat(document.getElementById('capital').value) || 0; const leverage = parseFloat(document.getElementById('leverage').value) || 1; const risk = parseFloat(document.getElementById('risk').value) || 0; const usable = capital * leverage; const qty = entry > 0 ? Math.floor(usable / entry) : 0; document.getElementById('result').innerHTML = '<h3>Results</h3><p>Action: ' + side + '</p><p>Entry: ' + entry + '</p><p>Quantity: ' + qty + '</p><p>Usable Capital: ' + usable + '</p>'; }
+document.getElementById('calc').addEventListener('click', calc);
+calc();
+</script>
+</body>
+</html>
